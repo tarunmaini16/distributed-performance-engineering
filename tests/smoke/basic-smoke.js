@@ -2,6 +2,9 @@
 import http from 'k6/http';
 import { check } from 'k6';
 import { Rate } from 'k6/metrics';
+import { getConfig } from '../../config/environment.js';
+
+const config = getConfig();
 
 const checkSuccessRate = new Rate('check_success_rate');
 
@@ -10,14 +13,20 @@ export const options = {
   iterations: 1,
 
   thresholds: {
-    http_req_failed: ['rate<0.01'],
-    http_req_duration: ['p(95)<2000'],
-    check_success_rate: ['rate==1'],
+    http_req_failed: [
+      `rate<${config.thresholds.maxFailureRate}`,
+    ],
+    http_req_duration: [
+      `p(95)<${config.thresholds.p95ResponseTime}`,
+    ],
+    checks: ['rate==1'],
   },
 };
 
 export default function () {
-  const response = http.get('https://test.k6.io/');
+  const response = http.get(`${config.baseUrl}/`, {
+  timeout: config.timeout,
+});
 
   const assertions = {
     'HTTP status is 200': response.status === 200,

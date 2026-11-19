@@ -1,0 +1,9 @@
+
+{
+  "baseUrl": "https://test.k6.io",
+  "timeout": "30s",
+  "thresholds": {
+    "p95ResponseTime": 1500,
+    "maxFailureRate": 0.01
+  }
+}
