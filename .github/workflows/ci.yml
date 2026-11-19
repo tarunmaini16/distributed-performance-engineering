@@ -1,0 +1,78 @@
+
+name: Performance Engineering CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  dependency-audit:
+    name: Dependency Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: demo-app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: demo-app
+        run: npm ci
+
+      - name: Audit production dependencies
+        working-directory: demo-app
+        run: npm audit --omit=dev --audit-level=high
+
+  docker-build:
+    name: Build Order API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t order-api:ci ./demo-app
+
+  api-tests:
+    name: API Smoke and Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start Order API
+        run: docker compose up -d --build --wait
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo apt-get update
+          sudo apt-get install -y gnupg ca-certificates
+          curl -fsSL https://dl.k6.io/key.gpg | \
+            sudo gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | \
+            sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      - name: Run CRUD smoke tests
+        run: k6 run -e ENV=local tests/smoke/order-workflow.js
+
+      - name: Run negative API tests
+        run: k6 run -e ENV=local tests/api/order-negative.test.js
+
+      - name: Run business-rule tests
+        run: k6 run -e ENV=local tests/api/order-business-rules.test.js
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down
