@@ -1,0 +1,14 @@
+
+{
+  "name": "performance-demo-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Demo Order Management API for performance testing",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "4.21.2"
+  }
+}
