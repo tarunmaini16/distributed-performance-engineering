@@ -1,7 +1,7 @@
 
-import orderLifecycle from './order-load.js';
 import { getConfig } from '../../config/environment.js';
 import { getWorkloadProfile } from '../../config/workloads/profiles.js';
+import { runOrderLifecycle } from '../../journeys/order-lifecycle.js';
 
 const config = getConfig();
 const profile = getWorkloadProfile();
@@ -30,10 +30,13 @@ export const options = {
     ],
 
     dropped_iterations: ['count==0'],
+
+    // Business-level quality gates.
+    order_success_rate: ['rate==1'],
+    order_journey_duration: ['p(95)<500'],
   },
 };
 
 export default function () {
-  orderLifecycle();
+  runOrderLifecycle();
 }
-
