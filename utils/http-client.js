@@ -29,6 +29,15 @@ function buildParams(options = {}) {
 function send(method, endpoint, body, options = {}) {
   const url = buildUrl(endpoint);
   const params = buildParams(options);
+  
+  params.tags = {
+  ...params.tags,
+  name: params.tags?.name ??
+    `${method} ${endpoint.replace(
+      /\/[0-9a-f]{8}-[0-9a-f-]{27,}/gi,
+      '/:id'
+    )}`,
+};
 
   let payload = body;
 
