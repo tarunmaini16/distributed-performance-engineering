@@ -1,0 +1,9 @@
+
+{
+  "baseUrl": "http://order-api.performance.svc.cluster.local:3000",
+  "timeout": "30s",
+  "thresholds": {
+    "p95ResponseTime": 2000,
+    "maxFailureRate": 0.01
+  }
+}

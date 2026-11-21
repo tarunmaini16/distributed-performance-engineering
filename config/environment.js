@@ -4,6 +4,7 @@ const configs = {
   staging: JSON.parse(open('./staging.json')),
   local: JSON.parse(open('./local.json')),
   'k8s-local': JSON.parse(open('./k8s-local.json')),
+  k8s: JSON.parse(open('./k8s.json')),
 };
 
 export function getConfig() {
